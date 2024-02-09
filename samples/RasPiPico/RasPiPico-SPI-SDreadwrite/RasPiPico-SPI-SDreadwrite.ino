@@ -37,7 +37,15 @@ void setup()
     return;
   }
   Serial.println("initialization done.");
+}
 
+void loop()
+{
+  // write loop!
+}
+
+void SDwrite()
+{
   myFile = SD.open("test.txt", FILE_WRITE);
 
   if (myFile)
@@ -52,7 +60,10 @@ void setup()
   {
     Serial.println("error opening test.txt");
   }
+}
 
+void SDread()
+{
   myFile = SD.open("test.txt");
   if (myFile)
   {
@@ -69,9 +80,4 @@ void setup()
   {
     Serial.println("error opening test.txt");
   }
-}
-
-void loop()
-{
-  // write loop!
 }

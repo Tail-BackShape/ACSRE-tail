@@ -1,10 +1,25 @@
 #include <Wire.h>
+#include <WiFi.h>
 
-#define RTC_addr 0x68
+#define RTC_addr 0x68 // DS1307 I2C address
+
+const char *ssid = "SSID";
+const char *password = "PASSWORD";
+
+struct tm timeInfo; // NTP time struct
+int NTPtime[7];
+
+// function prototype declaration
+byte read_RTC(byte);
+void write_RTC(int, int, int, int, int, int, int);
+int int_to_BCD(byte);
+int BCD_to_int(byte);
+void readtime_NTP();
 
 void setup()
 {
   Wire.begin();
+
   Serial.begin(115200);
   while (!Serial)
   {
@@ -12,9 +27,43 @@ void setup()
   }
   Serial.println("Start");
 
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  if (WiFi.begin(ssid, password) != WL_DISCONNECTED)
+  {
+    ESP.restart();
+  }
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(100);
+  }
+  Serial.println("Connected to the WiFi network!");
+
+  configTime(9 * 3600L, 0, "ntp.nict.jp",
+             "time.google.com", "ntp.jst.mfeed.ad.jp");
+
+  readtime_NTP();
+  /*
+  //check the write data for DS1307
+  Serial.print(NTPtime[0]);
+  Serial.print("/");
+  Serial.print(NTPtime[1]);
+  Serial.print("/");
+  Serial.print(NTPtime[2]);
+  Serial.print("/");
+  Serial.print(NTPtime[3]);
+  Serial.print("/");
+  Serial.print(NTPtime[4]);
+  Serial.print("/");
+  Serial.print(NTPtime[5]);
+  Serial.print("/");
+  Serial.println(NTPtime[6]);
+  */
+
   // write time to DS1307
-  //(sec, min, hour, week, day, month, year)
-  write_RTC(0, 35, 18, 3, 11, 2, 24);
+  //(sec, min, hour, day, date, month, year)
+  write_RTC(NTPtime[0], NTPtime[1], NTPtime[2], NTPtime[3],
+            NTPtime[4], NTPtime[5], NTPtime[6]);
 }
 
 void loop()
@@ -30,7 +79,7 @@ void loop()
   byte sec_r = read_RTC(0x00);
   byte min_r = read_RTC(0x01);
   byte hour_r = read_RTC(0x02);
-  // byte day_r = read_RTC(0x03);
+  // byte day_r = read_RTC(0x03); //The day of the week is not valuable data.
   byte date_r = read_RTC(0x04);
   byte month_r = read_RTC(0x05);
   byte year_r = read_RTC(0x06);
@@ -39,7 +88,7 @@ void loop()
   int sec = BCD_to_int(sec_r);
   int min = BCD_to_int(min_r);
   int hour = BCD_to_int(hour_r);
-  // int day = BCD_to_int(day_r); // san, mon...
+  // int day = BCD_to_int(day_r);
   int date = BCD_to_int(date_r);
   int month = BCD_to_int(month_r);
   int year = BCD_to_int(year_r);
@@ -56,7 +105,7 @@ void loop()
   Serial.print(":");
   Serial.println(sec);
 
-  delay(1000);
+  delay(100);
 }
 
 byte read_RTC(byte addr)
@@ -112,4 +161,37 @@ int BCD_to_int(byte BCD)
   uint8_t data = tens + ones;
 
   return data;
+}
+
+void readtime_NTP()
+{
+  getLocalTime(&timeInfo);
+  int year = timeInfo.tm_year + 1900;
+  int month = timeInfo.tm_mon + 1;
+  int date = timeInfo.tm_mday;
+  int day = timeInfo.tm_wday;
+  int hour = timeInfo.tm_hour;
+  int min = timeInfo.tm_min;
+  int sec = timeInfo.tm_sec;
+
+  Serial.print("NTP time is ");
+  Serial.print(year);
+  Serial.print("/");
+  Serial.print(month);
+  Serial.print("/");
+  Serial.print(date);
+  Serial.print("/");
+  Serial.print(hour);
+  Serial.print(":");
+  Serial.print(min);
+  Serial.print(":");
+  Serial.println(timeInfo.tm_sec);
+
+  NTPtime[0] = sec;
+  NTPtime[1] = min;
+  NTPtime[2] = hour;
+  NTPtime[3] = day + 1; // NTP time is 0-6 but RTC time is 1-7
+  NTPtime[4] = date;
+  NTPtime[5] = month;
+  NTPtime[6] = year - 2000; // NTP time is 20XX but RTC time is only XX
 }

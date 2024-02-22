@@ -1,5 +1,6 @@
 .vscode/
 FwhitESat/3DCAD/OldVersions/
+FwhitESat/FwhitESat-PCB/FwhitESat-PCB-backups/
 *.stl
 *.gcode
 *.dtmp

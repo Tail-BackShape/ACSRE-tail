@@ -1,1 +1,6 @@
 .vscode/
+FwhitESat/3DCAD/OldVersions/
+*.stl
+*.gcode
+*.dtmp
+*.bkp

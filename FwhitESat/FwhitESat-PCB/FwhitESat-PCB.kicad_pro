@@ -326,6 +326,22 @@
     [
       "78ea2883-2db0-4d81-80e1-b63c1c2056ac",
       ""
+    ],
+    [
+      "56957d94-f740-47f0-918d-81f554d7e663",
+      "Power"
+    ],
+    [
+      "f4665424-10ff-4a9f-9002-a506404d9567",
+      "MCUlayer"
+    ],
+    [
+      "20bd63c0-c7d9-415e-b9da-e5b49e44652d",
+      "Sensor-layer"
+    ],
+    [
+      "a960505b-a9a4-4f7d-b267-aaa461e8a1e5",
+      "Display-layer"
     ]
   ],
   "text_variables": {}
